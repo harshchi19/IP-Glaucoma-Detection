@@ -108,10 +108,9 @@ def create_pdf_report(original_img, clahe_img, grayscale_img, contrast_img, bina
     pdf_buffer.seek(0)
     return pdf_buffer.getvalue()
 
-st.set_page_config(page_title="Image Preprocessing Tool", layout='wide')
-st.title('Image Preprocessing Tool')
-
 def main():
+    st.title('Image Preprocessing Tool')
+
     uploaded_file = st.file_uploader("Upload an image", type=['jpg', 'jpeg', 'png'])
     
     if uploaded_file is not None:
@@ -199,6 +198,3 @@ def main():
         pdf_report = create_pdf_report(image_array, clahe_enhanced, grayscale_img, contrast_enhanced, binary_img, 
                                        saliency_map, pseudocolored_saliency, magnitude_spectrum, mean_magnitude)
         st.download_button("Download PDF Report", data=pdf_report, file_name="Image_Report.pdf", mime="application/pdf")
-
-if __name__ == "__main__":
-    main()

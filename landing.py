@@ -1,22 +1,39 @@
 import streamlit as st
+from streamlit.runtime.scriptrunner import get_script_run_ctx
 import sys
 import os
 from PIL import Image
-import subprocess
-import webbrowser
 
-def main():
-    st.set_page_config(
-        page_title="Glaucoma Detection Hub",
-        page_icon="👁️",
-        layout="wide"
-    )
+# Set page configuration ONCE at the very beginning
+st.set_page_config(
+    page_title="Glaucoma Detection Hub",
+    page_icon="👁️",
+    layout="wide"
+)
 
-    # Header
+# Create a session state object if it doesn't exist
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'home'
+
+# Navigation function
+def navigate_to(page):
+    st.session_state.current_page = page
+    st.rerun()
+
+# Sidebar navigation
+with st.sidebar:
+    st.title("Navigation")
+    st.button("🏠 Home", on_click=navigate_to, args=('home',), use_container_width=True)
+    st.button("🔄 ResNet-18", on_click=navigate_to, args=('resnet',), use_container_width=True)
+    st.button("🎯 YOLO & XGBoost", on_click=navigate_to, args=('yolo',), use_container_width=True)
+    st.button("🔍 U-Net", on_click=navigate_to, args=('unet',), use_container_width=True)
+    st.button("📊 Model Comparison", on_click=navigate_to, args=('comparison',), use_container_width=True)
+    st.button("⚙️ Preprocessing", on_click=navigate_to, args=('preprocessing',), use_container_width=True)
+
+def render_home():
     st.title("👁️ Glaucoma Detection Hub")
     st.write("Compare different deep learning models for Glaucoma detection")
 
-    # Main content area
     st.markdown("""
     ### Available Models
     Choose from our selection of advanced glaucoma detection models:
@@ -27,37 +44,18 @@ def main():
     with col1:
         st.info("### ResNet-18 Model")
         st.write("Uses ResNet-18 architecture for binary classification")
-        if st.button("Launch ResNet-18 Model"):
-            subprocess.Popen(["streamlit", "run", 
-                            os.path.join("Resnet 18", "glaucoma.py")])
+        st.button("Launch ResNet-18 Model", on_click=navigate_to, args=('resnet',))
 
     with col2:
         st.info("### YOLO & XGBoost Model")
         st.write("Combines YOLO object detection with XGBoost classification")
-        if st.button("Launch YOLO & XGBoost Model"):
-            subprocess.Popen(["streamlit", "run", 
-                            os.path.join("YOLO and XGBoost", "glaucoma_yolov8.py")])
+        st.button("Launch YOLO & XGBoost Model", on_click=navigate_to, args=('yolo',))
 
     with col3:
         st.info("### U-Net Model")
         st.write("Utilizes U-Net architecture for segmentation")
-        if st.button("Launch U-Net Model"):
-            subprocess.Popen(["streamlit", "run", 
-                            os.path.join("U-Net", "glaucocare.py")])
+        st.button("Launch U-Net Model", on_click=navigate_to, args=('unet',))
 
-    # Model Comparison Section
-    st.markdown("---")
-    st.header("Model Comparison")
-    if st.button("Launch Model Comparison"):
-        subprocess.Popen(["streamlit", "run", "comparison.py"])
-
-    # Preprocessing Section
-    st.markdown("---")
-    st.header("Image Preprocessing")
-    if st.button("Launch Preprocessing Tool"):
-        subprocess.Popen(["streamlit", "run", "Glaucoma-preprocessing.py"])
-
-    # Footer with model information
     st.markdown("---")
     st.markdown("""
     ### Model Information
@@ -77,5 +75,54 @@ def main():
     - Specialized in optic disc segmentation
     """)
 
-if __name__ == "__main__":
-    main()
+def render_model(model_name):
+    st.title(f"{model_name} Model")
+    st.write(f"This is the {model_name} model interface.")
+    
+    # Import and run the specific model code here
+    try:
+       if model_name == "ResNet-18":
+           sys.path.append(os.path.join(os.getcwd(), "Resnet 18"))
+           import resnet_glaucoma
+           resnet_glaucoma.main()
+       elif model_name == "YOLO & XGBoost":
+           sys.path.append(os.path.join(os.getcwd(), "YOLO and XGBoost"))
+           import yolov8_glaucoma_
+           yolov8_glaucoma_.main()  # Call main function here
+       elif model_name == "U-Net":
+           sys.path.append(os.path.join(os.getcwd(), "U-Net"))
+           import glaucocare
+           glaucocare.main()
+    except Exception as e:
+        st.error(f"Error loading {model_name} model: {str(e)}")
+        st.write("Please make sure all required files and dependencies are available.")
+
+# Main content router
+if st.session_state.current_page == 'home':
+    render_home()
+elif st.session_state.current_page == 'comparison':
+    # Directly import and call the function from comparison.py
+    try:
+        sys.path.append(os.path.join(os.getcwd(), "comparison"))
+        import comp
+        comp.main()  # Assuming the main function renders comparison content
+    except Exception as e:
+        st.error(f"Error loading comparison page: {str(e)}")
+elif st.session_state.current_page == 'resnet':
+    render_model("ResNet-18")
+elif st.session_state.current_page == 'yolo':
+    render_model("YOLO & XGBoost")
+elif st.session_state.current_page == 'unet':
+    render_model("U-Net")
+elif st.session_state.current_page == 'preprocessing':
+    try:
+        import preprocessing_glaucoma
+        preprocessing_glaucoma.main()
+    except Exception as e:
+        st.error(f"Error loading preprocessing tool: {str(e)}")
+        st.write("Please make sure all required files and dependencies are available.")
+
+# Add a home button in the footer for easy navigation
+if st.session_state.current_page != 'home':
+    st.markdown("---")
+    st.button("🏠 Return to Home", on_click=navigate_to, args=('home',))
