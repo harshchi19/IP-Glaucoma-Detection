@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 from ultralytics import YOLO
-from metricas_disco_escavacao import CDR, RDR, NRR, BVR, BVR2, CDRvh, excentricidade
+from yolov8_metricas_disco_escavacao import CDR, RDR, NRR, BVR, BVR2, CDRvh, excentricidade
 from xgboost import XGBClassifier
 import os
 
