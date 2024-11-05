@@ -18,7 +18,6 @@ if 'current_page' not in st.session_state:
 # Navigation function
 def navigate_to(page):
     st.session_state.current_page = page
-    st.rerun()
 
 # Sidebar navigation
 with st.sidebar:
@@ -92,7 +91,7 @@ def render_model(model_name):
        elif model_name == "U-Net":
            sys.path.append(os.path.join(os.getcwd(), "U-Net"))
            import glaucocare
-           glaucocare.main()
+           glaucocare.glaucoma_detection_app()
     except Exception as e:
         st.error(f"Error loading {model_name} model: {str(e)}")
         st.write("Please make sure all required files and dependencies are available.")
